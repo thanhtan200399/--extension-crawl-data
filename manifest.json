@@ -1,0 +1,20 @@
+{
+  "name": "Crawler Data ",
+  "description": "Base Level Extension",
+  "version": "1.0",
+  "manifest_version": 3,
+  "background": {
+    "service_worker": "service_worker.js",
+    "type": "module"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": "image.png"
+  },
+  "permissions": ["scripting", "identity", "activeTab", "storage", "cookies"],
+
+  "host_permissions": ["http://*/*", "https://*/*"],
+  "icons": {
+    "128": "image.png"
+  }
+}

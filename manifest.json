@@ -11,7 +11,7 @@
     "default_popup": "popup.html",
     "default_icon": "image.png"
   },
-  "permissions": ["scripting", "identity", "activeTab", "storage", "cookies"],
+  "permissions": ["scripting", "identity", "activeTab", "storage", "webNavigation"],
 
   "host_permissions": ["http://*/*", "https://*/*"],
   "icons": {

@@ -1,110 +1,133 @@
 async function fetchApi(dataJob) {
-  const customData = dataJob.map((item) => {
-    return `\\\"${item}\\\"`.replaceAll("\\", "");
-  });
+  const limit = Number(100)
+  const page = Math.ceil(dataJob / limit )
+  const totalFiles = Math.ceil(dataJob / 1000 )
+  const companyName = document.getElementById("search-input").value
+  
+  let currentFille = 0;
+  let totalData = [];
+  const downloadData = async (ids)=>{
+    const res = await fetch("https://apis.indeed.com/graphql?locale=en-US&co=JP", {
+      headers: {
+        accept: "*/*",
+        "accept-language": "en-US,en;q=0.9",
+        "content-type": "application/json",
+        "indeed-api-key": "0f2b0de1b8ff96890172eeeba0816aaab662605e3efebbc0450745798c4b35ae",
+        "indeed-client-sub-app": "japan-job-management-modules",
+        "indeed-client-sub-app-component": "./CandidateDeliveryJobsTab",
+        "indeed-ctk": "1htoc8bn2llpt802",
+        priority: "u=1, i",
+        "sec-ch-ua": '"Chromium";v="124", "Google Chrome";v="124", "Not-A.Brand";v="99"',
+        "sec-ch-ua-mobile": "?0",
+        "sec-ch-ua-platform": '"Windows"',
+        "sec-fetch-dest": "empty",
+        "sec-fetch-mode": "cors",
+        "sec-fetch-site": "same-site",
+        "x-datadog-origin": "rum",
+        "x-datadog-parent-id": "8438630412125509151",
+        "x-datadog-sampling-priority": "0",
+        "x-datadog-trace-id": "8852520271504570646",
+      },
+      referrer: "https://employers.indeed.com/",
+      referrerPolicy: "strict-origin-when-cross-origin",
+      body: `{\"operationName\":\"GenerateJobsBulkExportUrl\",\"variables\":{\"input\":{\"jobIds\":[${ids}],\"fileExtension\":\"XLSX\"}},\"extensions\":{},\"query\":\"mutation GenerateJobsBulkExportUrl($input: GenerateJobsBulkExportUrlInput!) {\\n  generateJobsBulkExportUrl(input: $input) {\\n    downloadUrl\\n    __typename\\n  }\\n}\\n\"}`,
+      method: "POST",
+      mode: "cors",
+      credentials: "include",
+    });
+    const data = await res.json();
+    if (data?.data?.generateJobsBulkExportUrl?.downloadUrl && data) {
+      await fetch(data.data.generateJobsBulkExportUrl.downloadUrl)
+          .then(response => response.blob())
+          .then(blob => {
+              const url = URL.createObjectURL(blob);
+              chrome.downloads.download({
+                  url: url,
+                  filename: `${companyName}_${currentFille}_${totalFiles}.xlsx`
+              }, (downloadId) => {
+                  if (downloadId) {
+                      console.log("Download started:", downloadId);
+                  } else {
+                      console.error('Failed to start download');
+                  }
+                  URL.revokeObjectURL(url);
+              });
+          })
+          .catch(error => console.error('Fetch error:', error));
+      console.log(companyName, currentFille, totalFiles);
+      
+      return true
+    }
+  }
 
-  const res = await fetch("https://apis.indeed.com/graphql?locale=en-US&co=JP", {
-    headers: {
-      accept: "*/*",
-      "accept-language": "en-US,en;q=0.9",
-      "content-type": "application/json",
-      "indeed-api-key": "0f2b0de1b8ff96890172eeeba0816aaab662605e3efebbc0450745798c4b35ae",
-      "indeed-client-sub-app": "japan-job-management-modules",
-      "indeed-client-sub-app-component": "./CandidateDeliveryJobsTab",
-      "indeed-ctk": "1htoc8bn2llpt802",
-      priority: "u=1, i",
-      "sec-ch-ua": '"Chromium";v="124", "Google Chrome";v="124", "Not-A.Brand";v="99"',
-      "sec-ch-ua-mobile": "?0",
-      "sec-ch-ua-platform": '"Windows"',
-      "sec-fetch-dest": "empty",
-      "sec-fetch-mode": "cors",
-      "sec-fetch-site": "same-site",
-      "x-datadog-origin": "rum",
-      "x-datadog-parent-id": "8438630412125509151",
-      "x-datadog-sampling-priority": "0",
-      "x-datadog-trace-id": "8852520271504570646",
-    },
-    referrer: "https://employers.indeed.com/",
-    referrerPolicy: "strict-origin-when-cross-origin",
-    body: `{\"operationName\":\"GenerateJobsBulkExportUrl\",\"variables\":{\"input\":{\"jobIds\":[${customData}],\"fileExtension\":\"XLSX\"}},\"extensions\":{},\"query\":\"mutation GenerateJobsBulkExportUrl($input: GenerateJobsBulkExportUrlInput!) {\\n  generateJobsBulkExportUrl(input: $input) {\\n    downloadUrl\\n    __typename\\n  }\\n}\\n\"}`,
-    method: "POST",
-    mode: "cors",
-    credentials: "include",
-  });
+  for(let i = 1; i <= page; i++){
+    if(totalData.length >= 1000){
+      const d = await downloadData(totalData);
+      if(d){
+        totalData=[]
+        currentFille = currentFille + 1;
+      }
+    }
+    const offset = Number((i - 1) * limit)
+    const res = await fetch("https://apis.indeed.com/graphql?co=JP&locale=en-US", {
+      "headers": {
+        "accept": "*/*",
+        "accept-language": "en-US,en;q=0.9,ja;q=0.8",
+        "content-type": "application/json",
+        "indeed-api-key": "0f2b0de1b8ff96890172eeeba0816aaab662605e3efebbc0450745798c4b35ae",
+        "indeed-client-sub-app": "japan-job-management-modules",
+        "indeed-client-sub-app-component": "./CandidateDeliveryJobsTab",
+        "indeed-ctk": "1i2do7jpjos5g801",
+        "priority": "u=1, i",
+        "sec-ch-ua": "\"Not/A)Brand\";v=\"8\", \"Chromium\";v=\"126\", \"Google Chrome\";v=\"126\"",
+        "sec-ch-ua-mobile": "?0",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "sec-fetch-dest": "empty",
+        "sec-fetch-mode": "cors",
+        "sec-fetch-site": "same-site",
+        "x-datadog-origin": "rum",
+        "x-datadog-parent-id": "6845034162875065437",
+        "x-datadog-sampling-priority": "0",
+        "x-datadog-trace-id": "3434709861061679949"
+      },
+      "referrer": "https://employers.indeed.com/",
+      "referrerPolicy": "strict-origin-when-cross-origin",
+      "body": `{\"operationName\":\"FindHostedJobPosts\",\"variables\":{\"hostedJobsInput\":{\"filter\":{\"partialAdvertisingLocation\":true,\"partialTitle\":true,\"statuses\":[\"ACTIVE\",\"PAUSED\"]},\"sort\":{\"direction\":\"DESC\",\"field\":\"DATE_CREATED\"},\"offset\":{\"limit\":${limit},\"offset\":${offset}}},\"hostedJobPostCountInput\":{\"partialTitle\":true,\"partialAdvertisingLocation\":true}},\"extensions\":{},\"query\":\"query FindHostedJobPosts($hostedJobsInput: FindHostedJobPostsInput!, $hostedJobPostCountInput: HostedJobPostCountsInput!) {\\n  hostedJobPostCounts(input: $hostedJobPostCountInput) {\\n    result {\\n      countByStatus {\\n        active\\n        deleted\\n        paused\\n        __typename\\n      }\\n      __typename\\n    }\\n    __typename\\n  }\\n  findHostedJobPosts(input: $hostedJobsInput) {\\n    results {\\n      hostedJobPost {\\n        applicationsCount {\\n          total\\n          milestoneCounts {\\n            milestone\\n            count\\n            __typename\\n          }\\n          __typename\\n        }\\n        newJobId: id\\n        country\\n        company\\n        dateCreated\\n        language\\n        advertisingLocations {\\n          active\\n          location\\n          jobKey\\n          __typename\\n        }\\n        status\\n        jobKey\\n        hostedJobBudget {\\n          ... on PeriodicSponsoredJobBudget {\\n            amount\\n            outOfBudget\\n            cost\\n            plan\\n            endDate\\n            __typename\\n          }\\n          __typename\\n        }\\n        attributes(keys: [\\\"itaAssociated\\\", \\\"useCmiJobPhoto\\\"]) {\\n          key\\n          value\\n          __typename\\n        }\\n        title\\n        legacyId\\n        advertisingLocations {\\n          active\\n          granularity\\n          jobKey\\n          location\\n          __typename\\n        }\\n        hostedJobPostVisibility {\\n          level\\n          __typename\\n        }\\n        jobTypes\\n        employerJob {\\n          id\\n          __typename\\n        }\\n        __typename\\n      }\\n      __typename\\n    }\\n    __typename\\n  }\\n}\\n\"}`,
+      "method": "POST",
+      "mode": "cors",
+      "credentials": "include"
+    });
+    const data = await res.json();
+    const customData = data.data.findHostedJobPosts.results.map((item) => {
+      return `\\\"${item.hostedJobPost.legacyId}\\\"`.replaceAll("\\", "");
+    });
+    if(customData){
+      document.getElementById("message").classList.remove("hidden");
+      document.getElementById("message").textContent = `...ダウンロード中 ${currentFille}/${Number(totalFiles)}`;
+      totalData.push(...customData)
+    }
+  }
 
-  const data = await res.json();
-  if (data?.data?.generateJobsBulkExportUrl?.downloadUrl && data) {
-    return data.data.generateJobsBulkExportUrl.downloadUrl;
-  } else return false;
+
+  if(totalData.length >0){
+    await downloadData(totalData)
+  }
+  // return true;
 }
 
-async function handleGetIds() {
+async function handleGetTotalJobs() {
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     const tab = tabs[0];
     document.getElementById("spinner").classList.remove("hidden");
-    function getIdJobs() {
-      const pagination = document.querySelectorAll("#cdjobstab > div > div > nav > ul > li");
-      const dataTable = document.querySelectorAll("table > tbody > tr");
-
-      if (dataTable.length <= 1) {
-        console.log("Found no open or paused jobs");
+    async function getIdJobs() {
+      const total = document.querySelector("#cdjobstab > div.css-1ks564a.eu4oa1w0 > div > button.css-13wsyiw.e8ju0x50 > span").textContent
+      const totalOfCurrentJob = total.replace(/[^0-9]/g, '');
+      if (total && Number(totalOfCurrentJob) > 0) {
         (async () => {
-          await chrome.runtime.sendMessage({ type: "empty" });
+          await chrome.runtime.sendMessage({ data: totalOfCurrentJob });
         })();
-        return false;
-      }
-
-      let listEl = [];
-      const handleGetListJob = (list) => {
-        return new Promise((resolve, reject) => {
-          const dataTable = document.querySelectorAll("table > tbody > tr");
-          if (dataTable.length <= 0) {
-            setTimeout(() => {
-              return handleGetListJob(list);
-            }, 5000);
-          }
-          if (dataTable && dataTable.length > 0) {
-            const idJobs = document.querySelectorAll(" tr > td > div > div > a");
-            const nextBtn = document.querySelector("nav > ul > li > button[aria-label='Next']");
-            if (idJobs.length > 0) {
-              list.push(...idJobs);
-            }
-            if (nextBtn && !nextBtn?.disabled) {
-              nextBtn.click();
-              window.setTimeout(() => {
-                handleGetListJob(list);
-              }, 5000);
-            } else {
-              const data = [];
-              for (let i of list) {
-                const elAtr = i.getAttribute("href");
-                const pos = elAtr.indexOf("=");
-                const id = elAtr.slice(pos + 1);
-                data.push(id);
-              }
-              (async () => {
-                await chrome.runtime.sendMessage({ data: data });
-              })();
-            }
-            resolve(list);
-          }
-        });
-      };
-
-      if (pagination && pagination.length > 3) {
-        document.querySelector("nav > ul > li > button[aria-label='1']").click();
-        window.setTimeout(() => {
-          if (
-            document.querySelector("nav > ul > li > button[aria-label='1']").getAttribute("aria-current") === "page"
-          ) {
-            handleGetListJob(listEl);
-          }
-        }, 1000);
-      } else {
-        handleGetListJob(listEl);
       }
     }
-
     chrome.scripting
       .executeScript({
         target: { tabId: tab.id },
@@ -120,13 +143,6 @@ chrome.runtime.onMessage.addListener(async function (request, sender, sendRespon
   const dataJob = request.data;
 
   const dataCompany = request.companies;
-  if (request.type === "empty") {
-    document.getElementById("spinner").classList.add("hidden");
-    document.getElementById("message").classList.remove("hidden");
-    document.getElementById("get-data").classList.add("disable");
-    document.getElementById("message").textContent = "Found no open or paused jobs...";
-  }
-
   if (dataCompany && dataCompany.length > 0) {
     document.getElementById("spinner").classList.add("hidden");
     document.getElementById("list-company").classList.remove("hidden");
@@ -188,7 +204,7 @@ chrome.runtime.onMessage.addListener(async function (request, sender, sendRespon
     document.getElementById("total").innerHTML = `(${dataCompany.length})`;
 
     for (let i = 0; i < dataCompany.length; i++) {
-      if (dataFilter[i].current) {
+      if (dataCompany[i].current) {
         const c = document.querySelector('a[aria-current="true"]');
         c?.addEventListener("click", () => {
           onSelect(dataFilter[i].name, dataFilter[i].url);
@@ -232,7 +248,7 @@ chrome.runtime.onMessage.addListener(async function (request, sender, sendRespon
               }
             }
           } else {
-            document.getElementById("list-company").innerHTML = `<span>No Result</span>`;
+            document.getElementById("list-company").innerHTML = `<span>データがございません</span>`;
           }
         } else {
           const companies = customCompanyCard(dataCompany);
@@ -250,25 +266,18 @@ chrome.runtime.onMessage.addListener(async function (request, sender, sendRespon
     });
   }
 
-  if (dataJob && dataJob.length > 0) {
-    const url = await fetchApi(dataJob);
-    if (url) {
-      const name = document.getElementById("search-input").value;
-      let el = document.createElement("a");
-      const file_name = name.replaceAll(" ", "-") + `-${new Date().toLocaleDateString("en-GB")}`;
-      el.href = url;
-      el.download = file_name;
-      document.getElementById("btn").appendChild(el);
-      el.click();
-      document.getElementById("btn").removeChild(el);
+  if(dataJob)
+   {
+    const result = await fetchApi(dataJob);
+    if (result) {
       document.getElementById("spinner").classList.add("hidden");
       document.getElementById("get-data").classList.add("disable");
       window.close();
     }
-  }
+   }
 });
 
-document.getElementById("get-data").addEventListener("click", handleGetIds);
+document.getElementById("get-data").addEventListener("click", handleGetTotalJobs);
 document.addEventListener("DOMContentLoaded", () => {
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     const tab = tabs[0];
@@ -324,3 +333,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 });
+
+
+

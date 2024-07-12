@@ -4,7 +4,37 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
+        * {
+            box-sizing: border-box;
+            padding: 0;
+            margin: 0;
+        }
+        body{
+            background-color: #1f2c5c;
+            padding: 6px;
+            color: #fff;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+            z-index: 1;
+        }
+
+        ::-webkit-scrollbar {
+            width: 4px;
+            background-color: #002864;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background-color: #0e002e;
+            border-radius: 100px;
+        }
+
+        ::-webkit-scrollbar-track {
+            -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+            background-color: #005da8;
+        }
         .container {
+            
             min-width: 400px;
             padding: 10px;
             overflow: hidden;
@@ -23,7 +53,7 @@
             font-size: 20px;
         }
         .title {
-            margin: 5px 0 10px;
+            margin: 5px 0px 0px;
         }
         .btn {
             display: flex;
@@ -42,16 +72,18 @@
             list-style-type: none;
         }
         .button {
-            border: 1px solid rgb(197, 197, 197);
-            padding: 10px 15px;
-            border-radius: 10px;
+            border: 1px solid rgb(0, 19, 104);
+            height: 32px;
+            padding: 4px 15px;
+            border-radius: 6px;
             cursor: pointer;
             text-decoration: none;
             font-weight: 600;
             transition: all;
+            background-color: #30B3E2;
         }
         .button:hover {
-            background-color: rgb(211, 211, 211);
+            background-color: #4ab7df;
         }
 
         .spinner{
@@ -118,10 +150,10 @@
             display: none !important; 
         }
 
-        .disable {
-            pointer-events: none;
-            cursor: no-drop;
-            background-color: rgb(196, 196, 196);
+        .disable, #search-input:disabled {
+            /* pointer-events: none; */
+            cursor: not-allowed;
+            color: rgb(255, 255, 255,0.25) ;
         }
 
         .company-card{
@@ -137,16 +169,16 @@
             text-decoration: none;
         }
         .company-card:hover, .selected{
-            background-color: rgb(211, 211, 211);
+            background-color:#ffffff69;
         }
         .company-card div{
             font-size: 18px;
             font-weight: 600;
-            color:black;
+            color:#fff;
         }
         .company-card span{
             font-size: 12px;
-            color: rgb(138, 138, 138);
+            color: rgb(195 195 195);
         }
 
         .message{
@@ -154,24 +186,30 @@
             padding: 4px;   
         }
 
+        #search-input{
+            border:none;
+            background-color: rgb(0, 0, 0, .3);
+            color: white;
+        }
+
     </style>
 </head>
 <body>
     <div class="container">
         <div id="title">
-            <h1 class="title">会社</h1>
+            <h3 class="title">会社名</h3>
             <span id="total"></span>
         </div>
         <div id="company-filter" class="company-filter">
             <input id="search-input" type="text" autocomplete="true" autofocus/>
             <ul id="list-company" class="list-company hidden"></ul>
         </div>
-        <div id="message" class="message hidden"></div>
         <div id="spinner" class="spinner hidden">
+        <div id="message" class="message hidden"></div>
             <span id="loader"></span>
         </div>
         <div class="btn" id="btn">
-            <a id="get-data" class="button disable" >Get Data</a>
+            <a id="get-data" class="button disable" >データ取得</a>
         </div>
     </div>
 <script src="popup.js"></script>    

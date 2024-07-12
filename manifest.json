@@ -4,14 +4,14 @@
   "version": "1.0",
   "manifest_version": 3,
   "background": {
-    "service_worker": "service_worker.js",
+    "service_worker": "background.js",
     "type": "module"
   },
   "action": {
     "default_popup": "popup.html",
     "default_icon": "image.png"
   },
-  "permissions": ["scripting", "identity", "activeTab", "storage", "webNavigation"],
+  "permissions": ["scripting", "identity", "activeTab", "storage", "webNavigation", "cookies", "downloads"],
 
   "host_permissions": ["http://*/*", "https://*/*"],
   "icons": {

@@ -282,11 +282,13 @@ document.addEventListener("DOMContentLoaded", () => {
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     const tab = tabs[0];
     document.getElementById("spinner").classList.remove("hidden");
+
     chrome.scripting
       .executeScript({
         target: { tabId: tab.id },
         func: () => {
-          const switchBtn = document.querySelector('button[aria-label="Switch employer account"]');
+          // const switchBtn = document.querySelector('button[aria-label="Switch employer account"]');
+          const switchBtn = document.querySelector('#app-root > div.css-1gorjcl.e37uo190 > div.css-lamjma.e37uo190 > div.css-13jgm14.e37uo190 > div:nth-child(2) > div > header > div.css-1myz1lp.e37uo190 > div:nth-child(4) > button.css-1g2eqsj.e8ju0x50');
           if (switchBtn) {
             switchBtn.click();
           }
@@ -333,6 +335,11 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 });
+
+
+
+
+
 
 
 

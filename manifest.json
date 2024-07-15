@@ -1,6 +1,6 @@
 {
-  "name": "Crawler Data ",
-  "description": "Base Level Extension",
+  "name": "DYM Indeed Download",
+  "description": "DYM Indeed Download",
   "version": "1.0",
   "manifest_version": 3,
   "background": {
@@ -9,12 +9,12 @@
   },
   "action": {
     "default_popup": "popup.html",
-    "default_icon": "image.png"
+    "default_icon": "DYM.png"
   },
   "permissions": ["scripting", "identity", "activeTab", "storage", "webNavigation", "cookies", "downloads"],
 
   "host_permissions": ["http://*/*", "https://*/*"],
   "icons": {
-    "128": "image.png"
+    "128": "DYM.png"
   }
 }
